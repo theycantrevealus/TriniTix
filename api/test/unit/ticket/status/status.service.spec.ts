@@ -1,18 +1,20 @@
-import { padding_left } from '../../../utils/string';
-import { StatusService } from '../../../src/status/status.service';
+import { padding_left } from '../../../../utils/string';
+import { StatusService } from '../../../../src/status/status.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { configService } from '../../../src/config/orm.config';
-import { TicketStatusModel } from '../../../src/model/ticket.status.model';
-import { connection } from '../../../src/providers/database.provider';
+import { configService } from '../../../../src/config/orm.config';
+import { TicketStatusModel } from '../../../../src/model/ticket.status.model';
+import { connection } from '../../../../src/providers/database.provider';
 import { ticketStatusMock } from './mocks/ticket.status.mock';
-import { TicketStatusDto } from '../../../src/interfaces/dtos/ticket.status.dto';
+import { TicketStatusDto } from '../../../../src/interfaces/dtos/ticket.status.dto';
 import {
   ticketStatusDeleteRequestSuccess,
   ticketStatusUpdateRequestSuccess,
-} from '../../../src/interfaces/dtos/ticket.status.response.dto';
+} from '../../../../src/interfaces/dtos/ticket.status.response.dto';
 import { timeout } from 'rxjs';
+import { UserService } from '../../../../src/user/user.service';
+import { UserModel } from '../../../../src/model/user.model';
 const tabSize = 40;
 describe(padding_left('📦 [TICKET STATUS SERVICE]', tabSize / 2, ' '), () => {
   let module: TestingModule;
@@ -26,15 +28,15 @@ describe(padding_left('📦 [TICKET STATUS SERVICE]', tabSize / 2, ' '), () => {
           secret: `${process.env.JWT_SECRET}`,
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-        TypeOrmModule.forFeature([TicketStatusModel], 'default'),
+        TypeOrmModule.forFeature([TicketStatusModel, UserModel], 'default'),
       ],
-      providers: [StatusService],
+      providers: [StatusService, UserService],
     }).compile();
 
     service = module.get<StatusService>(StatusService);
     const oldData = await service.get_all();
     for (const item of oldData) {
-      await service.ticket_status_delete_hard(item.uid);
+      await service.delete_hard(item.uid);
     }
   });
 
@@ -53,7 +55,7 @@ describe(padding_left('📦 [TICKET STATUS SERVICE]', tabSize / 2, ' '), () => {
       const initData = ticketStatusMock;
       let counter = 0;
       for (let a = 0; a < initData.length; a++) {
-        const initDataResult = await service.ticket_status_add(
+        const initDataResult = await service.add(
           TicketStatusDto.from({
             name: initData[a].name,
           }),

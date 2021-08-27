@@ -1,5 +1,6 @@
 import { IsString, IsUUID } from 'class-validator';
 import { UserModel } from '../../model/user.model';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserDTO implements Readonly<UserDTO> {
   @IsUUID()
@@ -46,4 +47,20 @@ export class UserDTO implements Readonly<UserDTO> {
       deleted_at: entity.deleted_at,
     });
   }
+}
+
+export class UserLoginDTO {
+  @ApiProperty({
+    uniqueItems: true,
+    example: 'example@domain.com',
+  })
+  @IsString()
+  email: string;
+
+  @ApiProperty({
+    minLength: 6,
+    example: 'password',
+  })
+  @IsString()
+  password: string;
 }

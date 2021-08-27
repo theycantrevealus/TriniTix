@@ -6,9 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { configService } from './config/orm.config';
 import { TicketModule } from './ticket/ticket.module';
 import { StatusModule } from './status/status.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.register({
+      secret: `${process.env.JWT_SECRET}`,
+    }),
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
     UserModule,
     TicketModule,

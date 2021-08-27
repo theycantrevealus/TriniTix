@@ -40,7 +40,7 @@ export class StatusService {
       .getMany();
   }
 
-  async ticket_status_delete_hard(uid: string) {
+  async delete_hard(uid: string) {
     const deleteResult = await this.repo.delete({ uid: uid });
     if (deleteResult) {
       return ticketStatusDeleteRequestSuccess;
@@ -49,7 +49,7 @@ export class StatusService {
     }
   }
 
-  async ticket_status_delete_soft(uid: string) {
+  async delete_soft(uid: string) {
     const deleteResult = await this.repo.softDelete({ uid: uid });
     if (deleteResult) {
       return ticketStatusDeleteRequestSuccess;
@@ -58,7 +58,7 @@ export class StatusService {
     }
   }
 
-  async ticket_status_add(ticketStatusDTO: TicketStatusDto) {
+  async add(ticketStatusDTO: TicketStatusDto) {
     const check = await this.ticket_status_duplicate_check(
       ticketStatusDTO.name,
     );
@@ -76,7 +76,7 @@ export class StatusService {
     }
   }
 
-  async ticket_status_update(ticketStatusDTO: TicketStatusDto) {
+  async update(ticketStatusDTO: TicketStatusDto) {
     const updatedResult = await this.repo.save(
       TicketStatusDto.createModel(ticketStatusDTO),
     );

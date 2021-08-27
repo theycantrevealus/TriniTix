@@ -28,3 +28,31 @@ export const ticketCreateRequestFailed = {
   message: 'ticket_status_create_failed',
   error: null,
 };
+
+//============================================================UPDATE SECTION
+
+export const ticketUpdateRequestSuccess = {
+  status: HttpStatus.OK,
+  message: 'ticket_status_create_success',
+  error: null,
+};
+
+export const ticketUpdateRequestFailed = {
+  status: HttpStatus.BAD_REQUEST,
+  message: 'ticket_status_create_failed',
+  error: null,
+};
+
+//============================================================DELETE SECTION
+
+export const ticketDeleteRequestSuccess = {
+  status: HttpStatus.OK,
+  message: 'ticket_status_delete_success',
+  error: null,
+};
+
+export const ticketDeleteRequestFailed = {
+  status: HttpStatus.BAD_REQUEST,
+  message: 'ticket_status_delete_failed',
+  error: null,
+};

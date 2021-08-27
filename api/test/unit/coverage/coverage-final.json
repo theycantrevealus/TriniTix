@@ -1,0 +1,4 @@
+{"/var/www/html/TriniTix/api/test/unit/ticket/mocks/ticket.mock.ts": {"path":"/var/www/html/TriniTix/api/test/unit/ticket/mocks/ticket.mock.ts","statementMap":{"0":{"start":{"line":1,"column":13},"end":{"line":5,"column":2}}},"fnMap":{},"branchMap":{},"s":{"0":1},"f":{},"b":{}}
+,"/var/www/html/TriniTix/api/test/unit/ticket/status/mocks/ticket.status.mock.ts": {"path":"/var/www/html/TriniTix/api/test/unit/ticket/status/mocks/ticket.status.mock.ts","statementMap":{"0":{"start":{"line":1,"column":13},"end":{"line":14,"column":2}}},"fnMap":{},"branchMap":{},"s":{"0":2},"f":{},"b":{}}
+,"/var/www/html/TriniTix/api/test/unit/user/mocks/user.mock.ts": {"path":"/var/www/html/TriniTix/api/test/unit/user/mocks/user.mock.ts","statementMap":{"0":{"start":{"line":1,"column":13},"end":{"line":5,"column":2}},"1":{"start":{"line":7,"column":13},"end":{"line":11,"column":2}}},"fnMap":{},"branchMap":{},"s":{"0":2,"1":2},"f":{},"b":{}}
+}

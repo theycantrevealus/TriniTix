@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../../src/app.module';
+import { connection } from '../../src/providers/database.provider';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -20,5 +21,14 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  afterAll(async () => {
+    /*const userData = await service.user_all();
+    for (const item of userData) {
+      await service.user_delete_hard(item.uid);
+    }*/
+    await connection.close();
+    //await module.close();
   });
 });

@@ -1,5 +1,6 @@
 import { IsString, IsUUID } from 'class-validator';
 import { TicketStatusModel } from '../../model/ticket.status.model';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TicketStatusDto implements Readonly<TicketStatusDto> {
   @IsUUID()
@@ -36,4 +37,12 @@ export class TicketStatusDto implements Readonly<TicketStatusDto> {
       deleted_at: entity.deleted_at,
     });
   }
+}
+
+export class TicketStatusInputDTO {
+  @ApiProperty({
+    example: 'Nama Status Ticket',
+  })
+  @IsString()
+  name: string;
 }

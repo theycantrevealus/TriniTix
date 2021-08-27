@@ -1,25 +1,25 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserModel } from '../model/user.model';
-import { getConnection, Repository } from 'typeorm';
-import { LoginUserDto } from '../interfaces/dtos/user.login.dto';
+import { getConnection, Not, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserResponseDto } from '../interfaces/dtos/user.login.response.dto';
-import { UserDTO } from '../interfaces/dtos/user.dto';
+import { UserDTO, UserLoginDTO } from '../interfaces/dtos/user.dto';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
-import env = require('dotenv');
-env.config();
-import {
-  userDeleteRequestFailed,
-  userDeleteRequestSuccess,
-} from '../interfaces/dtos/user.delete.response.dto';
 import {
   userCreateRequestDup,
   userCreateRequestFailed,
   userCreateRequestSuccess,
-} from '../interfaces/dtos/user.add.response.dto';
+  userDeleteRequestFailed,
+  userDeleteRequestSuccess,
+  userLoginRequestFailed,
+  userLoginRequestSuccess,
+  userUpdateRequestFailed,
+  userUpdateRequestSuccess,
+} from '../interfaces/dtos/user.response.dto';
+import env = require('dotenv');
 
+env.config();
 @Injectable()
 export class UserService {
   constructor(
@@ -28,108 +28,73 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(data: LoginUserDto) {
-    const find_user = await this.repo.findOne({ email: data.email });
-    let response: LoginUserResponseDto = {
-      status: HttpStatus.FORBIDDEN,
-      message: 'user not found',
-      errors: null,
-      data: null,
-    };
-    if (find_user) {
-      const isMatch = await bcrypt.compare(data.password, find_user.password);
+  async login(data: UserLoginDTO) {
+    const findUser: UserDTO = await this.repo.findOne({ email: data.email });
+    if (findUser) {
+      const isMatch = await bcrypt.compare(data.password, findUser.password);
       if (isMatch) {
         try {
           const token = this.jwtService.sign(data, {
             expiresIn: 30 * 24 * 60 * 60,
           });
-
-          response = {
-            status: HttpStatus.OK,
-            message: 'login_success',
-            errors: null,
-            data: {
-              user: find_user,
-              token: token,
-            },
-          };
+          userLoginRequestSuccess.user = UserDTO.from(findUser);
+          userLoginRequestSuccess.token = token;
+          return userLoginRequestSuccess;
         } catch (e) {
-          response = {
-            status: HttpStatus.FORBIDDEN,
-            message: 'login failed',
-            errors: ['login failed'],
-            data: {
-              user: null,
-              token: null,
-            },
-          };
+          return userLoginRequestFailed;
         }
       } else {
-        response = {
-          status: HttpStatus.FORBIDDEN,
-          message: 'login failed',
-          errors: ['login failed'],
-          data: {
-            user: null,
-            token: null,
-          },
-        };
+        return userLoginRequestFailed;
       }
     } else {
-      response = {
-        status: HttpStatus.FORBIDDEN,
-        message: 'login failed',
-        errors: ['login failed'],
-        data: {
-          user: null,
-          token: null,
-        },
-      };
+      return userLoginRequestFailed;
     }
-
-    return response;
   }
 
-  async get_detail(uid: string) {
-    return await this.repo.findOne(uid);
+  async detail(uid: string) {
+    return await this.repo.findOne({ withDeleted: true, where: { uid: uid } });
   }
 
-  async user_all(): Promise<UserDTO[]> {
-    return await this.repo.find({ deleted_at: null });
+  async get_all(): Promise<UserDTO[]> {
+    return await this.repo.find({
+      withDeleted: true,
+    });
   }
 
-  async user_all_active(): Promise<UserDTO[]> {
-    return await this.repo.find({ deleted_at: null });
+  async get_active(): Promise<UserDTO[]> {
+    return await this.repo.find({
+      withDeleted: true,
+      where: { deleted_at: null },
+    });
   }
 
-  async user_delete_soft(uid: string) {
-    const deleteResult = await this.repo.softDelete({ uid: uid });
-    if (deleteResult) {
+  async delete_soft(uid: string) {
+    const result = await this.repo.softDelete({ uid: uid });
+    if (result) {
       return userDeleteRequestSuccess;
     } else {
       return userDeleteRequestFailed;
     }
   }
 
-  async user_delete_hard(uid: string) {
-    const deleteResult = await this.repo.delete({ uid: uid });
-    if (deleteResult) {
+  async delete_hard(uid: string) {
+    const result = await this.repo.delete({ uid: uid });
+    if (result) {
       return userDeleteRequestSuccess;
     } else {
       return userDeleteRequestFailed;
     }
   }
 
-  async user_add(userDTO: UserDTO) {
-    const check = await this.user_duplicate_check(userDTO.email);
+  async insert(userDTO: UserDTO) {
+    const check = await this.check_dup(userDTO.email);
     if (!check) {
       const saltOrRounds = 10;
       const password = userDTO.password;
       userDTO.password = await bcrypt.hash(password, saltOrRounds);
-      userDTO.uid = uuid();
 
-      const createdResult = await this.repo.save(UserDTO.createModel(userDTO));
-      if (createdResult) {
+      const result = await this.repo.save(UserDTO.createModel(userDTO));
+      if (result) {
         return userCreateRequestSuccess;
       } else {
         return userCreateRequestFailed;
@@ -139,7 +104,22 @@ export class UserService {
     }
   }
 
-  async user_duplicate_check(email: string) {
+  async update(userDTO: UserDTO) {
+    const saltOrRounds = 10;
+    const password = userDTO.password;
+    userDTO.password = await bcrypt.hash(password, saltOrRounds);
+
+    const result = await this.repo.save(UserDTO.createModel(userDTO));
+    if (result) {
+      const updateResult = await this.detail(userDTO.uid);
+      userUpdateRequestSuccess.user = updateResult;
+      return userUpdateRequestSuccess;
+    } else {
+      return userUpdateRequestFailed;
+    }
+  }
+
+  async check_dup(email: string) {
     return await getConnection()
       .getRepository(UserModel)
       .createQueryBuilder('user')

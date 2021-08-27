@@ -48,7 +48,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       });
       const decodedData = (decoded as any).payload;
       if (decoded) {
-        const userDetail = await this.userService.get_detail(decodedData.uid);
+        const userDetail = await this.userService.detail(decodedData.uid);
         request.user = userDetail;
         if (userDetail) {
           return true;
